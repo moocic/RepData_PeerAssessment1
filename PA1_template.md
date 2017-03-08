@@ -1,10 +1,5 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-author: "moocic"
-output: 
-html_document:
-keep_md: true
----
+# Reproducible Research: Peer Assessment 1
+moocic  
 
 <br>
 
@@ -15,7 +10,8 @@ interval (missing values are coded as NA); `date` the date on which the measurem
 in YYYY-MM-DD format; `interval` identifier for the 5-minute interval in which measurement
 was taken.
 
-```{r data, echo = TRUE}
+
+```r
 temp <- tempfile()
 download.file("https://github.com/moocic/RepData_PeerAssessment1/raw/master/activity.zip", temp)
 dataset <- read.csv(unz(temp, "activity.csv"))
@@ -24,41 +20,62 @@ dataset$date <- as.Date(dataset$date)
 head(dataset); str(dataset)
 ```
 
+```
+##   steps       date interval
+## 1    NA 2012-10-01        0
+## 2    NA 2012-10-01        5
+## 3    NA 2012-10-01       10
+## 4    NA 2012-10-01       15
+## 5    NA 2012-10-01       20
+## 6    NA 2012-10-01       25
+```
+
+```
+## 'data.frame':	17568 obs. of  3 variables:
+##  $ steps   : int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ date    : Date, format: "2012-10-01" "2012-10-01" ...
+##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
+```
+
 <br>
 
 ## What is mean total number of steps taken per day?
 
-```{r steps, echo = TRUE}
+
+```r
 comp <- complete.cases(dataset)
 totalstepsday <- aggregate(dataset[comp, 1],
                            by = list(dataset$date[comp]),
                            FUN = sum,
                            na.rm = TRUE)
-totalstepsday_mean <- paste(round(mean(totalstepsday$x), 2))
-totalstepsday_median <- median(totalstepsday$x)
-totalstepsday_min <- min(totalstepsday$x)
-totalstepsday_max <- max(totalstepsday$x)
+totalstepsday_mean_narm <- paste(round(mean(totalstepsday$x), 2))
+totalstepsday_median_narm <- median(totalstepsday$x)
+totalstepsday_min_narm <- min(totalstepsday$x)
+totalstepsday_max_narm <- max(totalstepsday$x)
 par(lwd = 2)
 hist(totalstepsday$x,
      xlab = "Total number of steps taken per day",
      main = "Histogram",
      ylim = c(0,40))
 text(1000, 30,
-     paste("Mean =", totalstepsday_mean,
-           "\nMedian =", totalstepsday_median),
+     paste("Mean =", totalstepsday_mean_narm,
+           "\nMedian =", totalstepsday_median_narm),
      pos = 4,
      col = "darkgrey",
      cex = 0.8)
 ```
 
-The total steps taken per day vary from `r totalstepsday_min` to `r totalstepsday_max`, with a
-mean of `r totalstepsday_mean` and a median of `r totalstepsday_median`.
+![](PA1_template_files/figure-html/steps-1.png)<!-- -->
+
+The total steps taken per day vary from 41 to 21194, with a
+mean of 10766.19 and a median of 10765.
 
 <br>
 
 ## What is the average daily activity pattern?
 
-```{r pattern, echo = TRUE}
+
+```r
 pattern <- aggregate(dataset[comp, 1],
                      by = list(dataset$interval[comp]),
                      FUN = sum,
@@ -82,26 +99,35 @@ text(xmax, ymax,
      col = "darkgrey")
 ```
 
+![](PA1_template_files/figure-html/pattern-1.png)<!-- -->
+
 The 5-minute interval which, on average across all the days in the dataset, contains the
-maximum number of steps, was the `r maximum`th 5-minute interval, at `r xmax` minutes, with an
-average of `r ymax` steps.
+maximum number of steps, was the 104th 5-minute interval, at 835 minutes, with an
+average of 10927 steps.
 
 <br>
 
 ## Imputing missing values
 
-```{r missings, echo = TRUE}
+
+```r
 steps_missings <- sum(is.na(dataset$steps))
 row_missings <- sum(!complete.cases(dataset))
 percentage <- round(row_missings/nrow(dataset)*100,2)
 data.frame(steps_missings, row_missings, percentage)
 ```
 
-From the observations in the data set, `r row_missings` (`r paste (percentage, "%")`) had
+```
+##   steps_missings row_missings percentage
+## 1           2304         2304      13.11
+```
+
+From the observations in the data set, 2304 (13.11 %) had
 missing values (all in the `steps` variable).
 
 
-```{r imputing, echo = TRUE}
+
+```r
 dailymean <- aggregate(dataset[comp, 1],
                        by = list(dataset$date[comp]),
                        FUN = mean,
@@ -125,11 +151,40 @@ dataset_nona[naindex, 3] <- rowMeans(dataset_nona[naindex, 4:7],
 head(dataset_nona); str(dataset_nona)
 ```
 
+```
+##     interval       date     steps dailymean minutesmean stepsbefore
+## 1          0 2012-10-01 1.7169811        NA   1.7169811          NA
+## 115        5 2012-10-01 0.3396226        NA   0.3396226          NA
+## 133       10 2012-10-01 0.1320755        NA   0.1320755          NA
+## 221       15 2012-10-01 0.1509434        NA   0.1509434          NA
+## 274       20 2012-10-01 0.0754717        NA   0.0754717          NA
+## 314       25 2012-10-01 2.0943396        NA   2.0943396          NA
+##     stepsafter
+## 1           NA
+## 115         NA
+## 133         NA
+## 221         NA
+## 274         NA
+## 314         NA
+```
+
+```
+## 'data.frame':	17568 obs. of  7 variables:
+##  $ interval   : int  0 5 10 15 20 25 30 35 40 45 ...
+##  $ date       : Date, format: "2012-10-01" "2012-10-01" ...
+##  $ steps      : num  1.717 0.3396 0.1321 0.1509 0.0755 ...
+##  $ dailymean  : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ minutesmean: num  1.717 0.3396 0.1321 0.1509 0.0755 ...
+##  $ stepsbefore: int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ stepsafter : int  NA NA NA NA NA NA NA NA NA NA ...
+```
+
 The missing values in the `steps` variable were replaced by the mean of: average steps per day,
 average steps per 5-minute interval, steps taken in previous the 5-minute interval and steps taken
 in the later 5-minute interval (if data avaiable).
 
-```{r steps_nona, echo = TRUE}
+
+```r
 totalstepsday_nona <- aggregate(dataset_nona[, 3],
                                 by = list(dataset_nona$date),
                                 FUN = sum,
@@ -159,8 +214,8 @@ text(1000, 30,
      col = "blue",
      cex = 0.8)
 text(1000, 20,
-     paste("Mean =", totalstepsday_mean,
-           "\nMedian =", totalstepsday_median),
+     paste("Mean =", totalstepsday_mean_narm,
+           "\nMedian =", totalstepsday_median_narm),
      pos = 4,
      col = "red",
      cex = 0.8)
@@ -173,7 +228,9 @@ legend(16000, 30,
        cex = 0.8)
 ```
 
-Although the mean and the median total number of steps taken per day did not change greatly,
+![](PA1_template_files/figure-html/steps_nona-1.png)<!-- -->
+
+Although the mean and the median of total number of steps taken per day did not change greatly,
 the number of observations around the mean and median increased by imputing missing data on the
 estimates of the total daily number of steps.
 
@@ -181,7 +238,8 @@ estimates of the total daily number of steps.
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
-```{r differences, echo = TRUE}
+
+```r
 dataset_nona$week <- as.numeric(format(dataset_nona$date, "%w"))
 dataset_nona$weekdayend <- as.factor(ifelse(dataset_nona$week==0 | dataset_nona$week==6,
                                             "weekend",
@@ -240,6 +298,8 @@ text(2000, 150,
      col = "purple",
      cex = 0.8)
 ```
+
+![](PA1_template_files/figure-html/differences-1.png)<!-- -->
 <br>
 <br>
 Globally the patterns are similar. However, on average there tend to be more steps taken in mornings on weekdays than on weekends, and more steps taken in the afternoon on weekends than
